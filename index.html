@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE, chrome=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no" />
+	<title>바코드 변환 툴</title>
+    <link rel="shortcut icon" href="/resources/image/icon1.png" />
+    <link rel="apple-touch-icon" href="/resources/image/icon1.png" />
+    <link rel="stylesheet" type="text/css" href="/resources/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="/resources/dist/css/bootstrap-theme.css" />
+    <script type="text/javascript" src="/resources/dist/js/jquery-3.7.0.min.js"></script>
+    <script type="text/javascript" src="/resources/dist/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="/resources/dist/js/common.js"></script>
+    
+    <script th:inline="javascript">
+		/*<![CDATA[*/
+        $(function() {
+			
+			$("#trid").keypress(function(e) {
+			    if (e.which == 13) { // 13은 Enter 키의 키 코드
+			        //e.preventDefault(); // 폼 제출을 방지
+			        $("#confirmBtn").click(); // '확인' 버튼의 클릭 이벤트 트리거
+			    }
+			});
+			
+			$(document).on('keydown', function(event) {
+			    if (event.keyCode === 116) { // 116은 F5 키의 키 코드
+			        event.preventDefault(); // 기본 동작 방지
+			        alert("새로고침은 차단되었습니다.");
+			        // 여기에 새로고침 대신 수행할 로직을 추가할 수 있습니다.
+			    }
+			});
+			
+			
+
+			
+            $("#confirmBtn").click(function() {
+                // 모달 창 열기
+
+                var tridInput = $("#trid").val();
+                var regex = /^REC9900\d{3}0\d{14}$/; // 정규식 패턴
+
+                if (regex.test(tridInput)) {
+                    $("#loadingModal").modal("show");
+                    $("#tridForm").attr({
+                        "method": "post",
+                        "action": "/selenium"
+                    });
+                    $("#tridForm").submit();
+
+                } else {
+                    alert("다시 확인하세요.");
+                    // 버튼 클릭을 취소
+                    $("#loadingModal").modal("hide");
+                }
+            });
+
+            $("#trid").on("input", function() {
+                var tridInput = $(this).val();
+                var regex = /^REC9900\d{3}\d{15}$/; // 정규식 패턴
+                var checkNumberDiv = $("#checkNumber"); // 결과를 표시할 <div> 요소
+
+                var writing = 25; // 문자열로 변경
+
+                if (tridInput === "") {
+                    checkNumberDiv.text("Scanning receipt");
+                    checkNumberDiv.css("color", "black");
+                } else {
+                    var expectedPrefix = "REC9900";
+                    var digits = [ 'R', 'E', 'C', '9', '9', '0', '0' ];
+
+                    for (var i = 0; i < digits.length; i++) {
+                        if (tridInput.charAt(i) !== digits[i]) {
+                            checkNumberDiv.text("올바르지 않은 형식");
+                            checkNumberDiv.css("color", "#FF0000");
+                            return;
+                        }
+                    }
+
+                    if (10 > tridInput.length) {
+                        checkNumberDiv.text("■□□□□□");
+                        checkNumberDiv.css("color", "#FF0000");
+                    } else if (14 > tridInput.length) {
+                        checkNumberDiv.text("■■□□□□");
+                        checkNumberDiv.css("color", "#FF0000");
+                    } else if (17 > tridInput.length) {
+                        checkNumberDiv.text("■■■□□□");
+                        checkNumberDiv.css("color", "##FF0000");
+                    } else if (19 > tridInput.length) {
+                        checkNumberDiv.text("■■■■□□");
+                        checkNumberDiv.css("color", "#FF0000");
+                    } else if (regex.test(tridInput)) {
+                        checkNumberDiv.text("■■■■■■ OK");
+                        checkNumberDiv.css("color", "#228B22");
+                    } else {
+                        checkNumberDiv.text("■■■■■□");
+                        checkNumberDiv.css("color", "#FF0000");
+                    }
+                }
+            })
+
+        });
+        /*]]>*/
+    </script>
+    
+
+    <style type="text/css">
+        .center {
+            position: relative;
+            top: 100px;
+            margin: auto;
+        }
+
+        input {
+            margin-top: 10px;
+            margin-bottom: 10px;
+        }
+
+        label {
+            margin-top: 10px;
+        }
+
+        button {
+            margin: 10px;
+        }
+        
+        #checkNumber{
+			color: black;
+		}
+    </style>
+</head>
+<body>
+<div class="center">
+	
+    <div class="container border col-sm-6" >
+        <form class="form-signin" id="tridForm" method="post">
+            <div class="form-group">
+                <label for="TRID" class="col-sm-12 control-label inputTRID">[ TRID INPUT BOX ]</label>
+                <div class="col-sm-12">
+                    <input type="text" class="form-control" id="trid" name="trid" pattern="^REC9900\d{3}0\d{14}$"
+                        maxlength="25" value="REC" placeholder="입력란">
+                    <div id="checkNumber">Scanning receipt</div> <!-- 결과를 표시할 <div> 요소 -->
+                    <div class="d-flex justify-content-end">
+                        <button type="button" id="confirmBtn" class="btn btn-outline-primary">확인</button>
+<!--                         <button type="button" id="cancelBtn" class="btn btn-outline-primary">취소</button> -->
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Loading Modal -->
+<div class="modal fade" id="loadingModal"  data-bs-backdrop='static' data-bs-keyboard='false'  tabindex="-1" role="dialog" aria-labelledby="loadingModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" style="width: 150px; height: 70px;">
+        <div class="modal-content d-flex justify-content-center align-items-center"
+            style="width: 100%; height: 70px; margin: auto; ">
+          <p class="text-center" style=" margin: auto; ">검색중 ... </p> 
+        </div>
+    </div>
+</div>
+
+
+</body>
+</html>

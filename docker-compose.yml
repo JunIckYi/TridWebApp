@@ -1,0 +1,38 @@
+version: '3.8'
+services:
+  webapp1:
+    image: my-ubuntu-java-app
+    networks:
+      - my-network
+  webapp2:
+    image: my-ubuntu-java-app
+    networks:
+      - my-network
+
+  webapp3:
+    image: my-ubuntu-java-app
+    networks:
+      - my-network
+
+  webapp4:
+    image: my-ubuntu-java-app
+    networks:
+      - my-network
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - webapp1
+      - webapp2
+      - webapp3
+      - webapp4
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    external: true
