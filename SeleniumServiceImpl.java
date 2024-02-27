@@ -5,11 +5,13 @@ import java.text.SimpleDateFormat;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 //import java.time.Duration;
 
 import org.openqa.selenium.By;
@@ -18,6 +20,8 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.springframework.stereotype.Service;
 import org.springframework.ui.Model;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import com.sele.admin.vo.SeleniumVO;
 
@@ -28,7 +32,7 @@ public class SeleniumServiceImpl implements SeleniumService {
 	public static final String WEB_DRIVER_ID = "webdriver.chrome.driver"; //드라이버 ID
 	//public static final String WEB_DRIVER_PATH = "/usr/local/bin/chromedriver"; //linux용 드라이버 경로
 	//public static final String WEB_DRIVER_PATH ="C:\\Users\\wnslr\\git\\TridWebApp\\seleniumTest-2\\src\\main\\webapp\\resources\\chromedriver.exe";
-	public static final String WEB_DRIVER_PATH ="C:\\Users\\junyi\\AppData\\Local\\SeleniumBasic\\chromedriver.exe";
+	public static final String WEB_DRIVER_PATH ="C:\\chromedriver.exe";
 	
     public Map<String, List<SeleniumVO>> ChromeStart(SeleniumVO selvo,Model model) {
         Map<String, List<SeleniumVO>> dataMap = new HashMap<>();
@@ -37,6 +41,7 @@ public class SeleniumServiceImpl implements SeleniumService {
         
 			
         	System.setProperty(WEB_DRIVER_ID, WEB_DRIVER_PATH);
+        	System.out.println("[spring] : chrome driver path :" + WEB_DRIVER_PATH);
 			
 			
 			ChromeOptions options = new ChromeOptions();
@@ -50,53 +55,60 @@ public class SeleniumServiceImpl implements SeleniumService {
 			options.addArguments("--remote-allow-origins=*");
 			options.addArguments("--disable-gpu");
 			options.addArguments("--blink-settings=imagesEnabled=false");  
-			
+			System.out.println("[spring] : Chrome options settings complete");
 			
 			//WebDriver 객체 생성
 			ChromeDriver driver = new ChromeDriver(options);
-			//WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10)); // 10초 대기
+			System.out.println("[spring] : Launch Chrome browser");
+			//WebDriverWait wait = new WebDri크롬 브라우저 실행verWait(driver, Duration.ofSeconds(10)); // 10초 대기
 			//사용예시 By.id("detail_src_btn")에 대한 제어
 			//wait.until(ExpectedConditions.presenceOfElementLocated(By.id("detail_src_btn")));
 			
 			String url = "https://ksmart.ksnet.co.kr/login/loginInit.do";
 			driver.get(url);
-			
+			System.out.println("[spring] : Go to loginInit page");
 			
 			
 			WebElement id = driver.findElement(By.name("user_id"));
 			id.sendKeys("");
-			
+			System.out.println("[spring] : ID entered");
 			WebElement pw = driver.findElement(By.name("user_pswd"));
 			pw.sendKeys("");
-			
+			System.out.println("[spring] : Password entered");
 			WebElement btn =  driver.findElement(By.id("doLogin"));
 			btn.click();
-
+			System.out.println("[spring] : Login completed");
 			try {Thread.sleep(1000);} catch (InterruptedException e) {}
 			
 			
 			url = "https://ksmart.ksnet.co.kr/credit/tran/tranListInit.do?menu_id=MM00000017";
 			driver.get(url);
+			System.out.println("[spring] : Go to the card transaction page.");
+			
+			// Wait for the 'detail_src_btn' button to become clickable
+			WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10)); // Adjust the timeout as necessary
+			btn = wait.until(ExpectedConditions.elementToBeClickable(By.id("detail_src_btn")));
 			
 			btn = driver.findElement(By.id("detail_src_btn"));
+			System.out.println("[spring] : details button clicking Completed ");
 			btn.click();
 			
 			//String trid = selvo.getTrid(); // 주어진 숫자 문자열
 			String fulltrid = selvo.getTrid(); 
 			String trid = fulltrid.substring(3, 25);
-			System.out.println(trid);
+			System.out.println("[spring] : trid : "+trid);
 			String storeNoStr = trid.substring(4, 7); // 4부터 7번째 문자까지 추출
 			int storeNo = Integer.parseInt(storeNoStr); // 문자열을 int로 변환
-			System.out.println(storeNo);
+			System.out.println("[spring] : store number : "+storeNo);
 			String posNoStr = trid.substring(7, 11); // 7부터 11번째 문자까지 추출
 			int posNo = Integer.parseInt(posNoStr); // 문자열을 int로 변환
-			System.out.println(posNo);
+			System.out.println("[spring] : pos number : "+posNo);
 			String recieptNoStr = trid.substring(11, 16); // 11부터 16번째 문자까지 추출
 			int recieptNo = Integer.parseInt(recieptNoStr); // 문자열을 int로 변환
-			System.out.println(recieptNo);
+			System.out.println("[spring] : receipt number : "+recieptNo);
 			String paymentDayStr = trid.substring(16, 22); // 11부터 16번째 문자까지 추출
 			int paymentDay = Integer.parseInt(paymentDayStr); // 문자열을 int로 변환
-			System.out.println(paymentDay);
+			System.out.println("[spring] : date : "+paymentDay);
 			 try {
 				// 문자열을 날짜 포맷에 맞게 변환
 		        SimpleDateFormat inputFormat = new SimpleDateFormat("yyMMdd");
@@ -105,7 +117,7 @@ public class SeleniumServiceImpl implements SeleniumService {
 	        } catch (ParseException e) {
 	            // ParseException 예외 처리
 	            e.printStackTrace();
-	            System.err.println("날짜 형식이 잘못되었습니다.");
+	            System.err.println("[spring] : 날짜 형식이 잘못되었습니다.");
 	        }
 			
 			//년도 데이터 추출
@@ -225,7 +237,7 @@ public class SeleniumServiceImpl implements SeleniumService {
 			driver.findElement(By.xpath("//*[@id='ui-datepicker-div']/div[1]/div/select[2]/option[" + month + "]")).click();
 			//from day 세팅
 			driver.findElement(By.xpath("//*[@id='ui-datepicker-div']/table/tbody/tr[" + resultRow + "]/td[" + resultCol + "]/a")).click();
-			
+			System.out.println("[spring] : calender - start date");
 			
 			//to 켈린더 버튼 클릭
 			driver.findElement(By.xpath("//*[@id='src_date_from_to']/img[2]")).click();
@@ -233,21 +245,20 @@ public class SeleniumServiceImpl implements SeleniumService {
 			driver.findElement(By.xpath("//*[@id='ui-datepicker-div']/div[1]/div/select[1]/option")).click();
 			//to month 세팅
 			driver.findElement(By.xpath("//*[@id='ui-datepicker-div']/div[1]/div/select[2]/option[1]")).click();
-			
-			
 			//to day 세팅
 			driver.findElement(By.xpath("//*[@id='ui-datepicker-div']/table/tbody/tr[" + resultRow + "]/td[" + resultCol + "]/a")).click();
+			System.out.println("[spring] : calender - end date");
 			
 			//input TRID
 			String trid22 = trid.substring(2, 22);
 			
 
 			driver.findElement(By.id("remark_1")).sendKeys(trid22);
-			
+			System.out.println("[spring] : trid input completed");
 			
 			//CLICK Search butten
 			driver.findElement(By.id("search_btn")).click();
-			
+			System.out.println("[spring] : search button click");
 
 			try {Thread.sleep(1000);} catch (InterruptedException e) {}
 			
@@ -316,7 +327,7 @@ public class SeleniumServiceImpl implements SeleniumService {
 		        
 				//CLICK Search butten
 				driver.findElement(By.id("search_btn")).click();
-				
+				System.out.println("[spring] : researching completed");
 				
 			}
 			
@@ -354,7 +365,7 @@ public class SeleniumServiceImpl implements SeleniumService {
 	                int fixIntAmount = Integer.parseInt(fixStAmount);
 	                if(svo.getGubun().equals("취소")) {
 	                	fixIntAmount = fixIntAmount *-1;
-	                	System.out.println(fixIntAmount);
+	                	System.out.println("[spring] : 취소금액 있음 : " + fixIntAmount);
 	                }
 	                AmountSum += fixIntAmount;
 	                svo.setAmount(Integer.parseInt(fixStAmount));
@@ -405,6 +416,7 @@ public class SeleniumServiceImpl implements SeleniumService {
 	        
 	        model.addAttribute("svo", list);
 	        model.addAttribute("sbvo", bacodeList);
+	        System.out.println("[spring] : seleniumServiceimpl funtion completed");
 	        
 			try {
 				//드라이버가 null이 아니라면
@@ -428,7 +440,7 @@ public class SeleniumServiceImpl implements SeleniumService {
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage());
         }
-
+        System.out.println("[spring] : dataMap type return");
         return dataMap;
     }
     
@@ -467,10 +479,10 @@ public class SeleniumServiceImpl implements SeleniumService {
   			
   			
   			WebElement id = driver.findElement(By.name("user_id"));
-  			id.sendKeys("ikea373RE");
+  			id.sendKeys("");
   			
   			WebElement pw = driver.findElement(By.name("user_pswd"));
-  			pw.sendKeys("easy2019!");
+  			pw.sendKeys("");
   			
   			WebElement btn =  driver.findElement(By.id("doLogin"));
   			btn.click();
@@ -481,8 +493,14 @@ public class SeleniumServiceImpl implements SeleniumService {
   			url = "https://ksmart.ksnet.co.kr/credit/tran/tranListInit.do?menu_id=MM00000017";
   			driver.get(url);
   			
-  			btn = driver.findElement(By.id("detail_src_btn"));
-  			btn.click();
+  			
+			// Wait for the 'detail_src_btn' button to become clickable
+			WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10)); // Adjust the timeout as necessary
+			btn = wait.until(ExpectedConditions.elementToBeClickable(By.id("detail_src_btn")));
+			
+			btn = driver.findElement(By.id("detail_src_btn"));
+			System.out.println("상세 버튼 클릭 완료");
+			btn.click();
   			
   			String fulltrid = selvo.getTrid(); // 주어진 숫자 문자열
   			System.out.println(fulltrid);
